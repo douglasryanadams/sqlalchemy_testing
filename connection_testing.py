@@ -86,6 +86,26 @@ def test_readonly_hanging_sessions():
     _check_status('after closing test_readonly_hanging_sessions')
 
 
+def test_readonly_hanging_multiple_reads():
+    s_alpha = Session()
+    try:
+        td = TestData(name='testdata_alpha', count=1)
+        s_alpha.add(td)
+        s_alpha.commit()
+    except:
+        s_alpha.rollback()
+
+    s = Session()
+    try:
+        for i in range(0,10):
+            query = s.query(TestData)
+            found = query.first()
+
+        _check_status('before closing test_readonly_hanging_sessions')
+    finally:
+        s.close()
+    _check_status('after closing test_readonly_hanging_sessions')
+
 # Convenience Methods
 
 def _print_table(test_name, result):
