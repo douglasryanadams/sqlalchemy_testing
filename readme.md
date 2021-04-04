@@ -35,19 +35,24 @@ telegraf --config telegraf.conf
 ```
 
 Connect to [Adminer](http://localhost:8080)
+
 Log in:
 
-- System: PostgreSQL
-- Server: postgres
-- Username: postgres
-- Password: postgres
-- Database: postgres
+| Attribute | Value       |
+| --------- | ----------- |
+| System    |  PostgreSQL |
+| Server    |  postgres   |
+| Username  |  postgres   |
+| Password  |  postgres   |
+| Database  |  postgres   |
 
 
 Connect to [InfluxDB](http://localhost:8086)
 
-- Username: influxdb
-- Password: influxdb
+| Attribute | Value    |
+| --------- | -------- |
+| Username  | influxdb |
+| Password  | influxdb |
 
 Links to Dashboards:
 
