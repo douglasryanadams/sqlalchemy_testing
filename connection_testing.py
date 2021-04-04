@@ -1,10 +1,13 @@
 import logging
+import time
 
 from sqlalchemy import create_engine, Table, Column, Integer, String
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 from tabulate import tabulate
+
+import pytest
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,10 +25,14 @@ class TestData(Base):
     name = Column('name', String)
     count = Column('count', Integer)
 
+    def __repr__(self):
+        return f'TestData<{self.test_data_id=};{self.name=};{self.count=}>'
+
 Base.metadata.create_all(engine)
 
 
 # Run Tests
+
 
 def test_connection():
     s = Session()
@@ -49,6 +56,36 @@ def test_crud():
         s.close()
 
 
+def test_donothing_sessions():
+    for i in range(0,100):
+        s = Session()
+    _check_status('test_donothing_sessions')
+
+
+def test_readonly_hanging_sessions():
+    s_alpha = Session()
+    try:
+        td = TestData(name='testdata_alpha', count=1)
+        s_alpha.add(td)
+        s_alpha.commit()
+    except:
+        s_alpha.rollback()
+
+    stale_sessions = []
+    try:
+        for i in range(0,10):
+            s = Session()
+            stale_sessions.append(s)
+            query = s.query(TestData)
+            found = query.first()
+
+        _check_status('before closing test_readonly_hanging_sessions')
+    finally:
+        for s in stale_sessions:
+            s.close()
+    _check_status('after closing test_readonly_hanging_sessions')
+
+
 # Convenience Methods
 
 def _print_table(test_name, result):
@@ -57,3 +94,16 @@ def _print_table(test_name, result):
     table = tabulate(data, headers, tablefmt='psql')
     LOGGER.debug('%s:\n%s', test_name, table)
 
+def _check_status(test_name):
+    pool = engine.pool
+    headers = ['property', 'value']
+    data = [
+        ('size', pool.size()),
+        ('timeout', pool.timeout()),
+        ('checkedin', pool.checkedin()),
+        ('checkedout', pool.checkedout()),
+        ('overflow', pool.overflow()),
+    ]
+    table = tabulate(data,headers, tablefmt='simple')
+    LOGGER.debug('DB Status (%s):\n%s', test_name, table)
+    return pool
