@@ -1,0 +1,25 @@
+---
+
+version: "3.9"
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: "postgres"
+    ports:
+      - 5432:5432
+  adminer:
+    image: adminer:latest
+    ports:
+      - 8080:8080
+  influxdb:
+    image: influxdb:2.0
+    environment:
+      INFLUXD_BOLT_PATH: "/tmp/influxdb2/influxdb.bolt"
+    volumes:
+      - type: bind
+        source: ./influxdb2
+        target: /tmp/influxdb2
+    ports:
+      - 8086:8086
+
